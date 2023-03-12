@@ -40,4 +40,16 @@ public class BoardController {
 
         return model;
     }
+
+    @GetMapping("/view")
+    public ModelAndView view(ModelAndView model, @RequestParam int no){
+        Board board = null;
+
+        board = service.findBoardByNo(no);
+
+        model.addObject("board", board);
+        model.setViewName("board/view");
+
+        return model;
+    }
 }
