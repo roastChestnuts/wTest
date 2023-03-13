@@ -9,7 +9,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="times" />
-        <module name="CATDOGTIMES" />
       </profile>
     </annotationProcessing>
   </component>

@@ -46,7 +46,7 @@ public class PageInfo {
 			(10 * ((currentPage - 1) / pageLimit)) + 1 (n >= 0)
 		 */
 		return (this.pageLimit * ((this.currentPage - 1) / this.pageLimit)) + 1;
-	}
+	  }
 
 	public int getEndPage() {
 		// 10, 20, 30, 40, .... 

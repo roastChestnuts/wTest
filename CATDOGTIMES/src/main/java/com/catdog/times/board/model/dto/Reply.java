@@ -10,17 +10,23 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Reply {
-	private int no;
+	private int no;	//댓글 번호
 	
-	private int boardNo;
+	private int boardNo; //게시물 번호
+
+	private int group; //댓글 그룹
+
+	private int groupOrder; // 그룹내 순서
+
+	private int depth; // 댓글 깊이
+
+	private int writerNo; //작성자no
 	
-	private int writerNo;
+	private String writerId;//작성자id
 	
-	private String writerId;
+	private String content;	//댓글내용
 	
-	private String content;	
+	private Date createDate; //댓글작성일자
 	
-	private Date createDate;
-	
-	private Date modifyDate;
+	private Date modifyDate; //댓글수정일자
 }

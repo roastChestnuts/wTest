@@ -2,6 +2,8 @@
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <c:set var="path" value="${ pageContext.request.contextPath }"/>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
 
 <style>
@@ -43,7 +45,8 @@
 <section id="content">
 	<div id='board-write-container'>
 		<h2>게시판 작성</h2>
-		<form action="${ path }/board/write" method="POST" enctype="multipart/form-data">
+		<form action="${ path }/board/write?${_csrf.parameterName}=${_csrf.token}" method="POST" enctype="multipart/form-data">
+
 			<table id='tbl-board'>
 				<tr>
 					<th>제목</th>
@@ -51,7 +54,8 @@
 				</tr>
 				<tr>
 					<th>작성자</th>
-					<td><input type="text" name="writer" value="${ loginMember.id }" readonly></td>
+					<sec:authentication property="principal.id" var="security_id"/>
+					<td><input type="text" name="writer" value="${ security_id }" readonly></td>
 				</tr>
 				<tr>
 					<th>첨부파일</th>
@@ -63,6 +67,7 @@
 				</tr>
 				<tr>
 					<th colspan="2">
+
 						<input type="submit" value="등록">
 						<input type="reset" value="취소">
 					</th>

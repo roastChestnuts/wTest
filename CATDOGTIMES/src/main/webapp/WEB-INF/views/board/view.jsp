@@ -2,6 +2,8 @@
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 
 <c:set var="path" value="${ pageContext.request.contextPath }"/>
 
@@ -70,19 +72,24 @@
 			</tr>
 			<%--글작성자/관리자인경우 수정삭제 가능 --%>
 			<tr>
+
 				<th colspan="2">
-					<c:if test="${ not empty loginMember && loginMember.id == board.writerId }">
-						<button type="button" 
-							onclick="location.href='${ path }/board/update?no=${ board.no }'">수정</button>
-						<button type="button" id="btnDelete">삭제</button>
-					</c:if>
+                    <sec:authorize access="isAuthenticated()">
+                        <sec:authentication property="principal.id" var="security_id"/>
+                        <sec:authorize access="hasRole('ROLE_ADMIN')" var="isAdmin"/>
+                        <c:if test="${security_id == board.writerId || isAdmin}">
+                            <button type="button"
+                                onclick="location.href='${ path }/board/update?no=${ board.no }'">수정</button>
+                            <button type="button" id="btnDelete">삭제</button>
+                        </c:if>
+                    </sec:authorize>
 					<button type="button" onclick="location.href='${ path }/board/list'">목록으로</button>
 				</th>
 			</tr>
 		</table>
 		<div id="comment-container">
 	    	<div class="comment-editor">
-	    		<form action="${ pageContext.request.contextPath }/board/reply" method="POST">
+	    		<form action="${ path }/board/reply" method="POST">
 	    			<input type="hidden" name="boardNo" value="${ board.no }">
 					<textarea name="content" id="replyContent" cols="55" rows="3"></textarea>
 					<button type="submit" id="btn-insert">등록</button>	    			
@@ -99,9 +106,13 @@
 		    			<c:out value="${ reply.content }"/>
 		    		</td>
 		    		<td>
-		    			<c:if test="${ ! empty loginMember && loginMember.id == reply.writerId }">
-	    					<button class="btn-delete">삭제</button>
-    					</c:if>
+                        <sec:authorize access="isAuthenticated()">
+                            <sec:authentication property="principal.id" var="security_id"/>
+                            <sec:authorize access="hasRole('ROLE_ADMIN')" var="isAdmin"/>
+                            <c:if test="${security_id == board.writerId || isAdmin}">
+	    					    <button class="btn-delete">삭제</button>
+                            </c:if>
+                        </sec:authorize>
 		    		</td>
 		    	</tr>
 	    	</c:forEach>
@@ -123,8 +134,6 @@
 		$("#replyContent").on("focus", (e) => {
 			if(${ empty loginMember }) {
 				alert("로그인 후 이용해주세요!");
-				
-				$("#userId").focus();				
 			}
 		});
 	});
