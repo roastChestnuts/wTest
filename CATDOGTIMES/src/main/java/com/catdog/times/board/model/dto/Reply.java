@@ -10,15 +10,15 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Reply {
-	private int no;	//댓글 번호
+	private String no;	//댓글 번호
 	
-	private int boardNo; //게시물 번호
+	private String boardNo; //게시물 번호
 
-	private int group; //댓글 그룹
+	private String parent; // 부모
 
-	private int groupOrder; // 그룹내 순서
+	private String depth; // 댓글 깊이
 
-	private int depth; // 댓글 깊이
+	private int order; // 그룹내 순서
 
 	private int writerNo; //작성자no
 	

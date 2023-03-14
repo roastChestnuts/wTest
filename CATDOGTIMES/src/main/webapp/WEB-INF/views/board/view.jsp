@@ -87,6 +87,58 @@
 				</th>
 			</tr>
 		</table>
+
+        <div style="border: 1px solid; width: 600px; padding: 5px">
+            <form name="form1" action="${path}/board/reply?${_csrf.parameterName}=${_csrf.token}" method="post">
+                <sec:authentication property="principal.id" var="security_id"/>
+                <sec:authentication property="principal.no" var="security_no"/>
+                <input type="hidden" name="boardNo" value="${board.no}">
+                작성자: <input type="text" name="writerId" value="${ security_id }" readonly><br/>
+                <input type="hidden" name="writerNo" value="${ security_no }" readonly><br/>
+
+                <textarea name="content" rows="3" cols="60" maxlength="500" placeholder="댓글을 달아주세요."></textarea>
+                <input type='submit' value='등록'>
+            </form>
+        </div>
+
+        <c:forEach var="reply" items="${replies}" varStatus="status">
+            <div style="border: 1px solid gray; width: 600px; padding: 5px; margin-top: 5px;
+                  margin-left: <c:out value="${20*reply.depth}"/>px; display: inline-block">
+                <c:out value="${reply.writerId}"/> <c:out value="${reply.modifyDate}"/>
+                <a href="#" onclick="fn_replyDelete('<c:out value="${reply.no}"/>')">삭제</a>
+                <a href="#" onclick="fn_replyUpdate('<c:out value="${reply.no}"/>')">수정</a>
+                <a href="#" onclick="fn_replyReply('<c:out value="${reply.no}"/>')">댓글</a>
+                <br/>
+                <div id="reply<c:out value="${reply.no}"/>"><c:out value="${reply.content}"/></div>
+            </div><br/>
+        </c:forEach>
+
+        <div id="replyDiv" style="width: 99%; display:none">
+            <form name="form2" action="boardReplySave" method="delete">
+                <input type="hidden" name="boardNo" value="${board.no}">
+                <input type="hidden" name="no">
+                <textarea name="content" rows="3" cols="60" maxlength="500"></textarea>
+                <a href="#" onclick="fn_replyUpdateSave()">저장</a>
+                <a href="#" onclick="fn_replyUpdateCancel()">취소</a>
+            </form>
+        </div>
+        <!--대댓글-->
+        <div id="replyDialog" style="width: 99%; display:none">
+            <form name="form3" action="${path}/board/reply?${_csrf.parameterName}=${_csrf.token}" method="post">
+                <sec:authentication property="principal.id" var="security_id"/>
+                <sec:authentication property="principal.no" var="security_no"/>
+                <input type="hidden" name="boardNo" value="${board.no}">
+                <input type="hidden" name="no">
+                <input type="hidden" name="parent">
+                작성자: <input type="text" name="writerId" value="${ security_id }" readonly><br/>
+                <input type="hidden" name="writerNo" value="${ security_no }" readonly><br/>
+                <textarea name="content" rows="3" cols="60" maxlength="500"></textarea>
+                <a href="#" onclick="fn_replyReplySave()">저장</a>
+                <a href="#" onclick="fn_replyReplyCancel()">취소</a>
+            </form>
+        </div>
+
+		<!--
 		<div id="comment-container">
 	    	<div class="comment-editor">
 	    		<form action="${ path }/board/reply" method="POST">
@@ -96,6 +148,7 @@
 	    		</form>
 	    	</div>
 	    </div>
+
 	    <table id="tbl-comment">
 	    	<c:forEach var="reply" items="${ board.replies }">
 		    	<tr class="level1">
@@ -117,6 +170,7 @@
 		    	</tr>
 	    	</c:forEach>
 	    </table>
+	    -->
 </section>
 
 <script>
@@ -130,11 +184,107 @@
 		$("#fileDown").on("click", () => {
 			location.assign("${ path }/board/fileDown?oname=${ board.originalFileName }&rname=${ board.renamedFileName }");
 		});
-		
-		$("#replyContent").on("focus", (e) => {
-			if(${ empty loginMember }) {
-				alert("로그인 후 이용해주세요!");
-			}
-		});
-	});
+    })
+
+    function fn_replyDelete(no){
+        if (!confirm("삭제하시겠습니까?")) {
+            return;
+        }
+        var form = document.form2;
+
+        form.action="${path}/board/reply/delete?${_csrf.parameterName}=${_csrf.token}";
+        form.no.value=no;
+        form.method='post';
+        form.submit();
+    }
+
+    var updateReno = updateRememo = null;
+    function fn_replyUpdate(no){
+        var form = document.form2;
+        var reply = document.getElementById("reply"+no);
+        var replyDiv = document.getElementById("replyDiv");
+        replyDiv.style.display = "";
+
+        if (updateReno) {
+            document.body.appendChild(replyDiv);
+            var oldReno = document.getElementById("reply"+updateReno);
+            oldReno.innerText = updateRememo;
+        }
+
+        form.no.value=no;
+        form.content.value = reply.innerText;
+        reply.innerText ="";
+        reply.appendChild(replyDiv);
+        updateReno   = no;
+        updateRememo = form.content.value;
+        form.content.focus();
+    }
+
+    function fn_replyUpdateSave(){
+        var form = document.form2;
+        if (form.content.value=="") {
+            alert("글 내용을 입력해주세요.");
+            form.content.focus();
+            return;
+        }
+
+        form.action="${path}/board/reply/update?${_csrf.parameterName}=${_csrf.token}";
+        form.method='post';
+        form.submit();
+    }
+
+    function fn_replyUpdateCancel(){
+        var form = document.form2;
+        var replyDiv = document.getElementById("replyDiv");
+        document.body.appendChild(replyDiv);
+        replyDiv.style.display = "none";
+
+        var oldReno = document.getElementById("reply"+updateReno);
+        oldReno.innerText = updateRememo;
+        updateReno = updateRememo = null;
+    }
+    <!--대댓글 관련 함수-->
+    function hideDiv(id){
+        var div = document.getElementById(id);
+        div.style.display = "none";
+        document.body.appendChild(div);
+    }
+
+    function fn_replyReply(no){
+        var form = document.form3;
+        var reply = document.getElementById("reply"+no);
+        var replyDia = document.getElementById("replyDialog");
+        replyDia.style.display = "";
+
+        if (updateReno) {
+            fn_replyUpdateCancel();
+        }
+
+        form.content.value = "";
+        form.parent.value=no;
+        reply.appendChild(replyDia);
+        form.writerId.focus();
+    }
+    function fn_replyReplyCancel(){
+        hideDiv("replyDialog");
+    }
+
+    function fn_replyReplySave(){
+        var form = document.form3;
+
+        if (form.writerId.value=="") {
+            alert("작성자를 입력해주세요.");
+            form.writerId.focus();
+            return;
+        }
+        if (form.content.value=="") {
+            alert("글 내용을 입력해주세요.");
+            form.content.focus();
+            return;
+        }
+
+        form.action="${path}/board/reply?${_csrf.parameterName}=${_csrf.token}";
+        form.method='post';
+        form.submit();
+    }
 </script>

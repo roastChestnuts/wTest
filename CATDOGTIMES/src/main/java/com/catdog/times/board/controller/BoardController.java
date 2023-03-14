@@ -1,6 +1,7 @@
 package com.catdog.times.board.controller;
 
 import com.catdog.times.board.model.dto.Board;
+import com.catdog.times.board.model.dto.Reply;
 import com.catdog.times.board.model.service.BoardService;
 import com.catdog.times.common.util.MultipartFileUtil;
 import com.catdog.times.common.util.PageInfo;
@@ -54,14 +55,92 @@ public class BoardController {
     @GetMapping("/view")
     public ModelAndView view(ModelAndView model, @RequestParam int no){
         Board board = null;
+        List<Reply> replies = null;
 
         board = service.findBoardByNo(no);
+        replies = service.findReplyByBoardNo(no);
 
         model.addObject("board", board);
+        model.addObject("replies", replies); //댓글정보
         model.setViewName("board/view");
 
         return model;
     }
+
+    @PostMapping("/reply")
+    public ModelAndView reply(ModelAndView model, @ModelAttribute Reply reply){
+        int result = 0;
+        //reply.setBoardNo(boardNo);
+        result = service.insertBoardReply(reply);
+
+        if(result > 0) {
+            model.addObject("msg", "댓글이 등록되었습니다.");
+            model.addObject("location", "/board/view?no=" + reply.getBoardNo());
+        } else {
+            model.addObject("msg", "댓글 등록을 실패하였습니다.");
+            model.addObject("location", "/board/view?no=" + reply.getBoardNo());
+        }
+
+        model.setViewName("common/msg");
+
+        return model;
+    }
+    @PostMapping("reply/delete")
+    public ModelAndView board5ReplyDelete(ModelAndView model, @ModelAttribute Reply reply) {
+
+        int result = 0;
+
+        result = service.deleteBoardReply(reply.getNo());
+
+        if(result > 0) {
+            model.addObject("msg", "댓글이 삭제되었습니다.");
+            model.addObject("location", "/board/view?no=" + reply.getBoardNo());
+        } else {
+            model.addObject("msg", "댓글 삭제를 실패하였습니다.");
+            model.addObject("location", "/board/view?no=" + reply.getBoardNo());
+        }
+
+        model.setViewName("common/msg");
+
+        return model;
+    }
+    @PostMapping("/reply/update")
+    public ModelAndView replyUpdate(ModelAndView model, @ModelAttribute Reply reply){
+        int result = 0;
+        //reply.setBoardNo(boardNo);
+        result = service.updateBoardReply(reply);
+
+        if(result > 0) {
+            model.addObject("msg", "댓글이 수정되었습니다.");
+            model.addObject("location", "/board/view?no=" + reply.getBoardNo());
+        } else {
+            model.addObject("msg", "댓글 수정을 실패하였습니다.");
+            model.addObject("location", "/board/view?no=" + reply.getBoardNo());
+        }
+
+        model.setViewName("common/msg");
+
+        return model;
+    }
+//    @PostMapping("/reply")
+//    public ModelAndView reply(ModelAndView model, @RequestParam Reply reply, @RequestParam int boardNo){
+//        int result = 0;
+//
+//        reply.setBoardNo(boardNo);
+//        result = service.insertBoardReply(reply);
+//
+//        if(result > 0) {
+//            model.addObject("msg", "댓글이 등록되었습니다.");
+//            model.addObject("location", "/board/view?no=" + boardNo);
+//        } else {
+//            model.addObject("msg", "댓글 등록을 실패하였습니다.");
+//            model.addObject("location", "/board/view?no=" + boardNo);
+//        }
+//
+//        model.setViewName("common/msg");
+//
+//        return model;
+//    }
 
     @GetMapping("/delete")
     public ModelAndView delete(ModelAndView model,

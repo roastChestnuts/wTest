@@ -1,6 +1,7 @@
 package com.catdog.times.board.model.service;
 
 import com.catdog.times.board.model.dto.Board;
+import com.catdog.times.board.model.dto.Reply;
 import com.catdog.times.common.util.PageInfo;
 import com.catdog.times.board.model.mapper.BoardMapper;
 import com.catdog.times.board.model.dto.Board;
@@ -63,14 +64,49 @@ public class BoardServiceImpl implements BoardService {
 				
 		return result;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	//댓글 조회(게시글 번호)
+	@Override
+	public List<Reply> findReplyByBoardNo(int boardNo) {
+		return mapper.selectReplyByBoardNo(boardNo);
+	}
+
+	@Override
+	public int deleteBoardReply(String no) {
+		return mapper.deleteBoardReply(no);
+	}
+
+	@Override
+	public int insertBoardReply(Reply reply) {
+		int result = 0;
+		//등록일 경우
+		if (reply.getNo() == null || "".equals(reply.getNo())) {
+
+			if (reply.getParent() != null) {
+				//Reply replyInfo = sqlSession.selectOne("selectBoardReplyParent", reply.getParent());
+				Reply replyInfo = mapper.selectBoardReplyParent(reply.getParent());
+				reply.setDepth(replyInfo.getDepth());
+				reply.setOrder(replyInfo.getOrder() + 1);
+				mapper.updateBoardReplyOrder(replyInfo);
+			} else {
+				//Integer reorder = sqlSession.selectOne("selectBoardReplyMaxOrder", reply.getBoardNo());
+				Integer reOrder = mapper.selectBoardReplyMaxOrder(reply.getBoardNo());
+				reply.setOrder(reOrder);
+			}
+
+			//result = sqlSession.insert("insertBoard6Reply", reply);
+			result = mapper.insertBoardReply(reply);
+		} else {
+			//result = sqlSession.insert("updateBoard6Reply", reply);
+			result = mapper.updateBoardReply(reply);
+		}
+		return result;
+	}
+
+	@Override
+	public int updateBoardReply(Reply reply) {
+		return mapper.updateBoardReply(reply);
+	}
+
 
 }
